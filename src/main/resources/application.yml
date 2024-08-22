@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+      routes:
+        - id: cross-cutting-service
+          uri: lb://cross-cutting-service
+          predicates:
+            - Path=/crossCutting/**
+          filters:
+            - name: JwtFilter
+            - RewritePath=/cross-cutting-service/(?<segment>.*), /${segment}
+
+        - id: issuer-service
+          uri: lb://issuer-service
+          predicates:
+            - Path=/issuerService/**
+          filters:
+            - name: JwtFilter
+            - RewritePath=/issuer-service/(?<segment>.*), /${segment}
+
+        - id: book-service
+          uri: lb://book-service
+          predicates:
+            - Path=/bookService/**
+          filters:
+            - name: JwtFilter
+            - RewritePath=/book-service/(?<segment>.*), /${segment}
+
+      default-filters:
+        - name: JwtFilter
+
+server:
+  port: 8765
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    hostname: ${HOSTNAME:localhost}
